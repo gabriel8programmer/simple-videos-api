@@ -5,15 +5,15 @@ export class DatabasePostgres {
     
     async list(search) {
 
-        let result=''
+        let videos=''
 
         if (search){
-            result = await sql`SELECT * FROM videos WHERE title ILIKE '%' + ${search};`
+            videos = await sql`SELECT * FROM videos WHERE title ILIKE ${'%' + search + '%'};`
         } else {
-            result = await sql`SELECT * FROM videos;`
+            videos = await sql`SELECT * FROM videos;`
         }
 
-        return result
+        return videos
     }
 
     async create(video) {
@@ -25,12 +25,15 @@ export class DatabasePostgres {
 
     async update(id, video) {
 
-        const data = await sql`SELECT * FROM videos WHERE id = ${id}`
-        const selectedVideo = data[0]
+        const videoSelected = (await sql`SELECT * FROM videos WHERE id = ${id}`)[0]
 
-        let title = (video.title) ? title : selectedVideo.title
-        let description = (video.description) ? description : selectedVideo.description
-        let duration = (video.duration) ? duration : selectedVideo.duration
+        const { title: currentTitle, description: currentDescription, duration: currentDuration } = videoSelected
+
+        const title = (video.title) ? video.title : currentTitle
+        const description = (video.description) ? video.description : currentDescription
+        const duration = (video.duration) ? video.duration : currentDuration
+
+        console.log(title, description, duration)
 
        await sql`UPDATE videos
         SET title = ${title},
